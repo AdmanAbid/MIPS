@@ -159,8 +159,8 @@
       <a name="addrWidth" val="4"/>
       <a name="appearance" val="logisim_evolution"/>
       <a name="contents">addr/data: 4 16
-2020 1800 9800 7800 1400 b800 600 3800
-10 5800 d800 7400 2060 3400 5400 1580
+2020 1800 9800 7800 1400 b400 600 3800
+10 5800 d400 7400 2060 3400 5400 1580
 </a>
       <a name="dataWidth" val="16"/>
     </comp>

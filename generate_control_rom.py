@@ -101,8 +101,9 @@ instruction_controls = {
     "E": R_TYPE("and"),
     "G": R_TYPE("or"),
     "K": R_TYPE("nor"),
-    "I": R_TYPE("sll"),
-    "J": R_TYPE("srl"),
+    
+    "I": I_ARITH("sll"),
+    "J": I_ARITH("srl"),
 
     "B": I_ARITH("add"),
     "D": I_ARITH("sub"),

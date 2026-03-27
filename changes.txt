@@ -8,19 +8,3 @@ is automatically added before every assembly code in the assembler.
 
 
 problems:
-
-- sll, srl not behaving correctly
-test code:
-addi $t0, $zero, 3     # 0011
-sll  $t1, $t0, 1       # 0110 = 6
-srl  $t2, $t0, 1       # 0001 = 1
-
-expected:
-$t1 = 6
-$t2 = 1
-
-output:
-$t1 = 0
-$t2 = 0
-
-the problem might be with control rom generation. write_register selector mux is on when it should be off.
