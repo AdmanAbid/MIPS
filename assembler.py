@@ -27,9 +27,9 @@ REGISTER_TO_CODE = {
     '$sp'   : 6,
 }
 
-
 def normalize_line(line):
-    return line.strip().replace(',', ' ')
+    code_only = line.split('#', 1)[0]
+    return code_only.strip().replace(',', ' ')
 
 
 def tokenize_line(line):
@@ -52,7 +52,7 @@ def load_lines(path):
     
 
 def init_sp(lines):
-    return ["addi $sp, $zero, 255"] + lines
+    return ["addi $sp, $zero, 15"] + lines
 
 
 def build_symbol_table(lines):
@@ -172,10 +172,13 @@ def write_binary_output(ops, path):
             f.write(instr.to_bytes(2, byteorder='big'))
 
 
-lines = load_lines("test.asm")
-lines = init_sp(lines)
-symbol_table = build_symbol_table(lines)
-ops = assemble(lines)
-print_ops(ops)
+if __name__ == "__main__":
+    lines = load_lines("test.asm")
+    lines = init_sp(lines)
+    symbol_table = build_symbol_table(lines)
+    ops = assemble(lines)
+    # print_ops(ops)
 
-write_binary_output(ops, 'out.bin')
+    write_binary_output(ops, 'out.bin')
+    print("Complete!")
+    

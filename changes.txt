@@ -1,5 +1,5 @@
 - added $sp
-its implemented as just another register thats initialized at 255. to initialize, a line "addi $sp, $zero, 255"
+its implemented as just another register thats initialized at 15. to initialize, a line "addi $sp, $zero, 15"
 is automatically added before every assembly code in the assembler.
 
 - added some labels
