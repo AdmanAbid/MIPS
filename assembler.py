@@ -55,6 +55,30 @@ def init_sp(lines):
     return ["addi $sp, $zero, 15"] + lines
 
 
+def expand_pseudo_instructions(lines):
+    expanded_lines = []
+
+    for line in lines:
+        tokens = tokenize_line(line)
+        if not tokens:
+            expanded_lines.append(line)
+            continue
+
+        op = tokens[0]
+        if op == 'push' and len(tokens) == 2:
+            reg = tokens[1]
+            expanded_lines.append(f"sw {reg}, 0($sp)\n")
+            expanded_lines.append("addi $sp, $sp, -1\n")
+        elif op == 'pop' and len(tokens) == 2:
+            reg = tokens[1]
+            expanded_lines.append("addi $sp, $sp, 1\n")
+            expanded_lines.append(f"lw {reg}, 0($sp)\n")
+        else:
+            expanded_lines.append(line)
+
+    return expanded_lines
+
+
 def build_symbol_table(lines):
     symbol_table = {}
     instruction_count = 0
@@ -173,11 +197,12 @@ def write_binary_output(ops, path):
 
 
 if __name__ == "__main__":
-    lines = load_lines("test.asm")
+    lines = load_lines("input.asm")
     lines = init_sp(lines)
+    lines = expand_pseudo_instructions(lines)
     symbol_table = build_symbol_table(lines)
     ops = assemble(lines)
-    # print_ops(ops)
+    print_ops(ops)
 
     write_binary_output(ops, 'out.bin')
     print("Complete!")
