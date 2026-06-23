@@ -27,6 +27,10 @@ REGISTER_TO_CODE = {
     '$sp'   : 6,
 }
 
+BRANCH_MIN_OFFSET = -8
+BRANCH_MAX_OFFSET = 7
+LONG_BRANCH_LABEL_PREFIX = "__long_branch_skip_"
+
 def normalize_line(line):
     code_only = line.split('#', 1)[0]
     return code_only.strip().replace(',', ' ')
@@ -96,6 +100,72 @@ def build_symbol_table(lines):
             instruction_count += 1
 
     return symbol_table
+
+
+def invert_branch_op(op):
+    if op == 'beq':
+        return 'bneq'
+    if op == 'bneq':
+        return 'beq'
+    return None
+
+
+def is_out_of_range_branch_offset(offset):
+    return offset < BRANCH_MIN_OFFSET or offset > BRANCH_MAX_OFFSET
+
+
+def expand_long_branches(lines):
+    transformed_lines = lines
+    label_counter = 0
+
+    while True:
+        symbol_table = build_symbol_table(transformed_lines)
+        new_lines = []
+        instruction_count = 0
+        changed = False
+
+        for line in transformed_lines:
+            tokens = tokenize_line(line)
+
+            if not tokens:
+                new_lines.append(line)
+                continue
+
+            first = tokens[0]
+            if first.endswith(':'):
+                new_lines.append(line)
+                continue
+
+            op = tokens[0]
+            if op in {'beq', 'bneq'} and len(tokens) == 4:
+                label = tokens[3]
+                if label in symbol_table:
+                    target_instruction_count = symbol_table[label]
+                    offset = target_instruction_count - (instruction_count + 1)
+
+                    if is_out_of_range_branch_offset(offset):
+                        skip_label = f"{LONG_BRANCH_LABEL_PREFIX}{label_counter}"
+                        inverse_op = invert_branch_op(op)
+
+                        rs = tokens[1]
+                        rt = tokens[2]
+                        new_lines.append(f"{inverse_op} {rs}, {rt}, {skip_label}\n")
+                        new_lines.append(f"j {label}\n")
+                        new_lines.append(f"{skip_label}:\n")
+
+                        label_counter += 1
+                        instruction_count += 1
+                        changed = True
+                        continue
+
+            new_lines.append(line)
+            instruction_count += 1
+
+        transformed_lines = new_lines
+        if not changed:
+            break
+
+    return transformed_lines
 
 
 def generate_r_type(op, rd, rs, rt):
@@ -200,6 +270,7 @@ if __name__ == "__main__":
     lines = load_lines("input.asm")
     lines = init_sp(lines)
     lines = expand_pseudo_instructions(lines)
+    lines = expand_long_branches(lines)
     symbol_table = build_symbol_table(lines)
     ops = assemble(lines)
     print_ops(ops)
